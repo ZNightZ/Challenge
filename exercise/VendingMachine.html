@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Vending Machine</title>
+  <!-- Bootstrap CSS 4.3.1 -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+  crossorigin="anonymous">
+
+  <!-- Axios -->
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+  <!-- VueJS -->
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+  <script src="https://unpkg.com/vue@2.0.3/dist/vue.js"></script>
+  
+
+</head>
+<body>
+       
+    <div id="app">
+        <section class="jumbotron text-center">
+            <div class="container">
+                <h1 class="jumbotron-heading">Vending Machine</h1>
+            </div>
+        </section>
+        <div class="container mb-4">
+            <div class="row">
+                <div class="col-12">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th scope="col"> </th>
+                                    <th scope="col" class="text-center">Product</th>
+                                    <th scope="col" class="text-center">Available</th>
+                                    <th scope="col" class="text-right">Price</th>
+                                </tr>
+                            </thead>
+                                <tbody>
+                                    <tr v-for="(ele,index) in info.data" key="ele.id">
+                                        <td><img style="border-radius:50%;width:100px;height:70px; " v-bind:src="ele.image"/> </td>
+                                        <td class="text-center">{{ ele.name }}</td>
+                                        <td class="text-center">{{ ele.in_stock}}</td>
+                                        <td class="text-center">{{ ele.price }}</td>
+                                        <td class="text-right">
+                                            <button  @click="buyitem(index)" class="btn btn-primary" style="width:100%;">buyitem</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+                    <div class="col mb-2">
+                        <div class="row">
+                            <div class="col-sm-6  col-md-4">
+                                <p style="font-size:30px;">Your balance is {{ balance }}</p>
+                            </div>
+                             <div v-for="(coin,index) in allcoin"  key="index" class="col-sm-2 col-md-2 text-right">
+                                <button class="btn btn-lg btn-block btn-success text-uppercase" @click="topup(index)">Add coin {{ coin}} </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="container">
+                        <div class="row">
+                            <div class="col">
+                                <button type="button" @click="refund" class="btn btn-dark btn-lg btn-block">Refund</button>
+                            </div>
+                        </div>
+                    </div>
+            </div>
+        </div>
+    </div>
+
+
+
+  <script>
+    new Vue({
+        el: '#app',
+        data () {
+ 
+            return {
+                info:[],
+                balance:0,
+                allcoin:[10,5,2,1],
+                cart:[]
+                
+            }
+        },
+        methods: {
+            // this for top up menu 
+            topup(index){
+                this.balance+=this.allcoin[index]
+            },
+            // this for refun menu get value from exchange methods and set balance to zero
+            refund(balance,index){
+                this.exchange(index,balance)
+                this.balance=0;
+            },
+            //buy item funcion
+            buyitem(index){
+                let total = 0;
+                //check if in stock or not 
+                if(this.info.data[index].in_stock == false){
+                    alert("This product is not avaliable")
+                    //refund coin to user
+                    return
+                }
+                //check money does it enough to buy product
+                if(this.balance<this.info.data[index].price){
+                    alert("Please insert more coin")
+                    return
+                }
+                //buy function happend
+                if(this.balance >= this.info.data[index].price){
+                    //use total to keep exchange
+                    total = this.balance - this.info.data[index].price
+                    //make exchange balance
+                    this.balance = total;
+                    //check is that exchagne from buy item
+                    if(total != 0 ){
+                        alert("You got "+this.info.data[index].name)
+                        this.cart.push(this.info.data[index].name);
+                        this.exchange(index.balance)
+                        return
+                    }
+                    //this case for no exchange 
+                    alert("You got "+this.info.data[index].name)
+                    //confirm order by push to array
+                    this.cart.push(this.info.data[index].name);
+                } 
+            },
+            //exchange function 
+            exchange(balance,allcoin){
+                var exchange= "";
+                //check value for each index in array of allcoin
+               for (var i=0; i<this.allcoin.length; i++) {
+                    if (this.balance>=this.allcoin[i]) {
+                    this.balance = this.balance - this.allcoin[i];
+                    exchange = exchange + this.allcoin[i] + ',';
+                    i--;
+                    }
+                }   
+                alert("exchange is "+exchange)
+            }
+        },
+        mounted () {
+            // get data useing axios 
+            axios
+            .get('https://www.mocky.io/v2/5c77c5b330000051009d64c9')
+            .then(response => {
+                this.info = response.data
+                console.log(response.data)
+            })
+            .catch(error => {
+                console.log(error)
+                this.errored = true
+            })
+            .finally(() => this.loading = false)
+        },
+       
+        
+    })
+
+  </script>
+</body>
+</html>
